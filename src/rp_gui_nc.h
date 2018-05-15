@@ -28,6 +28,9 @@ map_cursor *rp_get_mapcursor(void);
 void rp_expand_statusline(void);
 
 void rp_select_event(void);
+void rp_deselect_event(void);
 void rp_center_map_to_umc(void);
+
+void rp_army_selected_input(army *);
 
 void input_key_debug(int);

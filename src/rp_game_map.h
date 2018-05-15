@@ -12,6 +12,7 @@ unsigned short rp_get_resource(const tile *);
 unsigned short rp_get_height(const tile *);
 unsigned short rp_get_armycity(const tile *);
 unsigned short rp_get_owner(const tile *);
+unsigned short rp_get_ownerNEW(const tile);
 
 unsigned short rp_get_ac_owner_height(const tile *);
 

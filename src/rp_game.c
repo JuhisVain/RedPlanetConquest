@@ -171,6 +171,7 @@ city *rp_city_search(faction *fact, int x, int y)
 
 army *rp_army_search(faction *fact,int x,int y)
 {
+  
   army *ptr = fact->army_list;
   while (ptr != NULL) {
     if (ptr->x == x && ptr->y == y) {
@@ -179,6 +180,7 @@ army *rp_army_search(faction *fact,int x,int y)
       ptr = ptr->next;
     }
   }
+  
   return NULL;
 }
 
@@ -189,6 +191,6 @@ faction *rp_faction_search(int fact_id)
       return &(factions[i]);
     }
   }
-
+  
   return NULL;
 }

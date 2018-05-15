@@ -34,8 +34,11 @@ void start_game(void)
 
   //Begin game
 
-  int input;
-  while ( (input = wgetch(stdscr)) != L'0') {
+  wint_t input;
+  while ( 1 ) {
+
+    wget_wch(stdscr, &input);
+    
     switch (input) {
     case KEY_LEFT:
       rp_mc_left(map_cursor,1);
@@ -96,8 +99,15 @@ void start_game(void)
       rp_select_event();
       rp_center_map_to_umc();
       break;
+    case 127: //<- backspace
+      rp_deselect_event();
+      break;
     case KEY_RESIZE:
       rp_term_resize();
+      break;
+
+    case L'0':
+      goto endprogescape;
       break;
 
     default:
@@ -107,6 +117,8 @@ void start_game(void)
     flushinp();
     rp_draw_gui();
   }
+
+ endprogescape:
   rp_end_gui();
   
 }

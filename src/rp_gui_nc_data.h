@@ -5,6 +5,7 @@ static unsigned int ui_mode = 0;
 #define citymask 0x2
 #define statlinemask 0x4
 
+#define UM_ARMY_IS_SELECTED (ui_mode & armymask)
 #define UM_S_ARMY ui_mode |= armymask
 #define UM_DS_ARMY ui_mode = ~(~ui_mode | armymask)
 #define UM_S_CITY ui_mode |= citymask

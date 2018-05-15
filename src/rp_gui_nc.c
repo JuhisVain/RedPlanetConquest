@@ -42,8 +42,9 @@ extern world *world_p;
 
 //left top corner of map:
 static map_cursor mc;
-//cursor to point at tiles
+//cursor to point at specific tiles
 static map_cursor umc;
+static map_cursor s_umc; //secondary umc
 
 //Colors for heights
 
@@ -89,8 +90,8 @@ void rp_init_gui(void)
   //ncurses init:
   initscr();
   start_color();
-  cbreak();
-  //raw();
+  //cbreak();
+  raw();
   keypad(stdscr, TRUE);
   noecho();
   refresh();
@@ -232,34 +233,27 @@ map_cursor *rp_get_mapcursor(void)
   return &mc;
 }
 
-tile *rp_umc_tile(void)
+tile *rp_umc_tile(const map_cursor *const inmc)
 {
   int mapheight, mapwidth;
   getmaxyx(map,mapheight,mapwidth);
 
   tile *tile_under_cursor =
-    &(world_p->worldmap[umc.y][umc.x]);
+    //&(world_p->worldmap[umc.y][umc.x]);
+    &(world_p->worldmap[inmc->y][inmc->x]);
 
-  /* Can't get this to work. update: Apparently fixed now...
-  //This thing was supposed to fix a black tile appearing at low right corner
-  // if umc is outside mapview
-  if (umc.x >= mc.x+mapwidth  || umc.x < mc.x-mapwidth ||
-      umc.y >= mc.y+mapheight || umc.y < mc.y ) {
-    return tile_under_cursor;
-  }
-  */
-  
   cchar_t cchar_under_cursor;
 
-  int xonmap = umc.x-mc.x;
+  //int xonmap = umc.x-mc.x;
+  int xonmap = inmc->x-mc.x;
   if (xonmap < 0) {
     xonmap +=WORLD_WIDTH;
   }
 
-  int mody = umc.y-mc.y;
+  //int mody = umc.y-mc.y;
+  int mody = inmc->y-mc.y;
 
   //Extract wide char from screen:
-
   mvwin_wch(map, mody, xonmap,&cchar_under_cursor);
 
   //cchar_under_cursor.attr = A_BLINK;//attr holds effects. ps. A_BOLD is bad
@@ -269,6 +263,10 @@ tile *rp_umc_tile(void)
   if (xonmap+WORLD_WIDTH <= mapwidth) {
     //mapwidth -= WORLD_WIDTH;
     mvwadd_wch(map, mody,xonmap+WORLD_WIDTH,&cchar_under_cursor);
+  }
+  
+  if (UM_ARMY_IS_SELECTED && (inmc != &s_umc) ) {
+    tile_under_cursor = rp_umc_tile(&s_umc);
   }
   
   return tile_under_cursor;
@@ -395,7 +393,7 @@ void rp_draw_gui()
   mvwaddstr(panel ,5,2, umc_pos);
 
   //These things should only be done when something changes:
-  rp_update_panel(rp_umc_tile());
+  rp_update_panel(rp_umc_tile(&umc));
   rp_update_statusline();
 
   
@@ -584,16 +582,20 @@ void rp_term_resize()
 
 void rp_select_event(void)
 {
+  
   if (rp_get_armycity(&(world_p->worldmap[umc.y][umc.x]))) {
-
+    
     army *found_army;
-    if ((found_army = rp_army_search(
-			rp_faction_search(
-			  rp_get_owner(&(world_p->worldmap[umc.y][umc.x]))),
-			umc.x, umc.y) ))
-    {
+  
+    found_army = rp_army_search(
+		   rp_faction_search(
+		     rp_get_ownerNEW( world_p->worldmap[umc.y][umc.x] )),
+		   umc.x, umc.y);
+
+    if (found_army != NULL) {
       UM_S_ARMY;
       //Army selection stuff here
+      rp_army_selected_input(found_army);
       return;
     }
     
@@ -611,6 +613,66 @@ void rp_select_event(void)
   } else { //Nothing to select here
     //Maybe an error message here
   }
+}
+
+void rp_army_selected_input(army *selected_army)
+{
+
+  s_umc.x = umc.x;
+  s_umc.y = umc.y;
+  
+  while (1) {
+    wint_t input;
+    wget_wch(stdscr, &input);
+
+    switch(input) {
+    case L'8':
+      rp_mc_up(&s_umc,1);
+      break;
+    case L'9':
+      rp_mc_up(&s_umc,1);
+      rp_mc_right(&s_umc,1);
+      break;
+    case L'6':
+      rp_mc_right(&s_umc,1);
+      break;
+    case L'3':
+      rp_mc_right(&s_umc,1);
+      rp_umc_down(&s_umc,1);
+      break;
+    case L'2':
+      rp_umc_down(&s_umc,1);
+      break;
+    case L'1':
+      rp_mc_left(&s_umc,1);
+      rp_umc_down(&s_umc,1);
+      break;
+    case L'4':
+      rp_mc_left(&s_umc,1);
+      break;
+    case L'7':
+      rp_mc_up(&s_umc,1);
+      rp_mc_left(&s_umc,1);
+      break;
+
+    case L'0':
+      goto loopexit;
+      break;
+    default:
+      break;
+    }
+
+    rp_draw_gui();
+    
+  }
+ loopexit:
+  rp_deselect_event();
+}
+
+void rp_deselect_event(void)
+{
+  UM_DS_ARMY;
+  UM_DS_CITY;
 }
 
 void rp_center_map_to_umc(void)

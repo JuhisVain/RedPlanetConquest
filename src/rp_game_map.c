@@ -37,6 +37,10 @@ unsigned short rp_get_owner(const tile *source)
 {
   return (*source & OWNER_MASK)>>10;
 }
+unsigned short rp_get_ownerNEW(const tile source)
+{
+  return (source & OWNER_MASK)>>10;
+}
 unsigned short rp_get_ac_owner_height(const tile *source)
 {
   return *source & (OWNER_MASK | ARMYCITY_MASK | HEIGHT_MASK);
