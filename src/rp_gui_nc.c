@@ -239,38 +239,46 @@ tile *rp_umc_tile(const map_cursor *const inmc)
   getmaxyx(map,mapheight,mapwidth);
 
   tile *tile_under_cursor =
-    //&(world_p->worldmap[umc.y][umc.x]);
     &(world_p->worldmap[inmc->y][inmc->x]);
 
   cchar_t cchar_under_cursor;
 
-  //int xonmap = umc.x-mc.x;
   int xonmap = inmc->x-mc.x;
+  
   if (xonmap < 0) {
     xonmap +=WORLD_WIDTH;
   }
 
-  //int mody = umc.y-mc.y;
   int mody = inmc->y-mc.y;
 
-  //Extract wide char from screen:
-  mvwin_wch(map, mody, xonmap,&cchar_under_cursor);
+  //debig text:
+  char data[20];
+  sprintf(data,"xom:%d,my:%d  ",xonmap,mody);
+  mvwaddstr(panel,3,3,data);
 
-  //cchar_under_cursor.attr = A_BLINK;//attr holds effects. ps. A_BOLD is bad
-  cchar_under_cursor.ext_color = CP_UMC;//ext_color holds colorpair id number
-  wadd_wch(map,&cchar_under_cursor);
-  //repeat umc graphics if view is larger than world width:
-  if (xonmap+WORLD_WIDTH <= mapwidth) {
-    //mapwidth -= WORLD_WIDTH;
-    mvwadd_wch(map, mody,xonmap+WORLD_WIDTH,&cchar_under_cursor);
-  }
-  
   if (UM_ARMY_IS_SELECTED && (inmc != &s_umc) ) {
     tile_under_cursor = rp_umc_tile(&s_umc);
   }
-  
-  return tile_under_cursor;
 
+  //if cursor is outside map view:
+  if (xonmap >= mapwidth || mody < 0 || mody >= mapheight) {
+    //Do nothing
+  } else {
+
+    //Extract wide char from screen:
+    mvwin_wch(map, mody, xonmap,&cchar_under_cursor);
+    
+    //cchar_under_cursor.attr = A_BLINK;//attr holds effects. ps. A_BOLD is bad
+    cchar_under_cursor.ext_color = CP_UMC;//ext_color holds colorpair id number
+    wadd_wch(map,&cchar_under_cursor);
+    //repeat umc graphics if view is larger than world width:
+    if (xonmap+WORLD_WIDTH <= mapwidth) {
+      mvwadd_wch(map, mody,xonmap+WORLD_WIDTH,&cchar_under_cursor);
+    }
+    
+  }
+
+  return tile_under_cursor;
 }
 
 //Map cursor movement:
