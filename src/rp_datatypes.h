@@ -13,8 +13,8 @@ typedef unsigned short tile;
 
 typedef struct army {
   unsigned short x, y;
-  //unsigned short movement_remain; Shuold be determined by troop
   unsigned int troop[10];
+  short movement; //This should be determined by troop types in army
   struct army *next;
 } army;
 
@@ -44,6 +44,17 @@ typedef struct
   faction *faction_list;
   unsigned char faction_count;
 } world;
+
+enum direction {
+  N,
+  NE,
+  E,
+  SE,
+  S,
+  SW,
+  W,
+  NW
+};
 
 
 #endif

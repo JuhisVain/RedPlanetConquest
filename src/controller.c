@@ -96,8 +96,8 @@ void start_game(void)
       rp_expand_statusline();
       break;
     case 13: //ENTER
-      rp_select_event();
       rp_center_map_to_umc();
+      rp_select_event();
       break;
     case 127: //<- backspace
       rp_deselect_event();

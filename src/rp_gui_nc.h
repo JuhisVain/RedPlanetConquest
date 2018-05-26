@@ -32,5 +32,6 @@ void rp_deselect_event(void);
 void rp_center_map_to_umc(void);
 
 void rp_army_selected_input(army *);
+int rp_multitile_movement(army *selected_army);
 
 void input_key_debug(int);

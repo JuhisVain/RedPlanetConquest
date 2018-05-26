@@ -7,6 +7,7 @@
 #include "rp_game_map.h"
 #include "rp_gui_nc.h"
 #include "rp_game.h"
+#include "rp_game_logic.h"
 
 #include "rp_gui_nc_data.h"
 
@@ -601,7 +602,7 @@ void rp_select_event(void)
 		   umc.x, umc.y);
 
     if (found_army != NULL) {
-      UM_S_ARMY;
+      //UM_S_ARMY;
       //Army selection stuff here
       rp_army_selected_input(found_army);
       return;
@@ -626,10 +627,70 @@ void rp_select_event(void)
 void rp_army_selected_input(army *selected_army)
 {
 
+  while (1) { //single tile step movement
+    wint_t input;
+    wget_wch(stdscr, &input);
+
+    switch(input) {
+    case L'8':
+      rp_step_army(selected_army,N);
+      break;
+    case L'9':
+      rp_step_army(selected_army,NE);
+      break;
+    case L'6':
+      rp_step_army(selected_army,E);
+      break;
+    case L'3':
+      rp_step_army(selected_army,SE);
+      break;
+    case L'2':
+      rp_step_army(selected_army,S);
+      break;
+    case L'1':
+      rp_step_army(selected_army,SW);
+      break;
+    case L'4':
+      rp_step_army(selected_army,W);
+      break;
+    case L'7':
+      rp_step_army(selected_army,NW);
+      break;
+    case L'5': //Go to multitile movement mode
+      rp_multitile_movement(selected_army);
+      break;
+    case L'0':
+      goto exitloop;
+      break;
+    default:
+      break;
+    }
+
+    //Make umc follow army:
+    umc.x = selected_army->x;
+    umc.y = selected_army->y;
+
+    rp_center_map_to_umc();
+    
+    rp_draw_gui();
+
+  }
+
+ exitloop:
+  rp_deselect_event();
+  return;
+}
+
+//returns 1 if moved:
+int rp_multitile_movement(army *selected_army)
+{
+
+  UM_S_ARMY;
+  
   s_umc.x = umc.x;
   s_umc.y = umc.y;
   
-  while (1) {
+  while (1) { //Multitile movement using secondary user map cursor
     wint_t input;
     wget_wch(stdscr, &input);
 
@@ -662,9 +723,10 @@ void rp_army_selected_input(army *selected_army)
       rp_mc_up(&s_umc,1);
       rp_mc_left(&s_umc,1);
       break;
-
+      
     case L'0':
-      goto loopexit;
+      UM_DS_ARMY;
+      return 0;
       break;
     default:
       break;
@@ -673,8 +735,6 @@ void rp_army_selected_input(army *selected_army)
     rp_draw_gui();
     
   }
- loopexit:
-  rp_deselect_event();
 }
 
 void rp_deselect_event(void)
