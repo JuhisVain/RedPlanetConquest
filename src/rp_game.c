@@ -6,7 +6,7 @@
 
 city *rp_setup_city(int, int, char*);
 void rp_add_city(faction *, unsigned short, unsigned short,int, char[20]);
-void rp_add_army(faction *, unsigned short, unsigned short);
+void rp_add_army(faction *, unsigned short, unsigned short, char template_id);
 
 extern world *world_p;
 
@@ -24,6 +24,28 @@ void rp_free_factions(void)
   free(factions);
 }
 
+void rp_setup_army_templates(faction *fact)
+{
+  for (int i=0; i<10; i++) {
+    fact->army_templates[i].id = i;
+    strcpy(fact->army_templates[i].name, "DEF");
+
+    troop_type temp_tt;
+    strcpy(temp_tt.name, "DEF_TT");
+    temp_tt.movement = INFANTRY;
+    temp_tt.weapon = SMALL;
+    temp_tt.armor = NONE;
+    temp_tt.ability = NO_SPECIAL;
+    temp_tt.vision_range = 2;
+    
+    for (int j=0; j<10; j++) {
+      fact->army_templates[i].troop[j] = temp_tt;
+      fact->army_templates[i].default_troop_count[j] = 3000;
+    }
+    
+  }
+}
+
 void rp_setup_factions(char playername[20])
 {
   sprintf(factions[0].name, "%s", playername);
@@ -31,6 +53,10 @@ void rp_setup_factions(char playername[20])
   factions[0].food = 0;
   factions[0].ammo = 0;
   factions[0].straglers = 0;
+
+  //Create a default testing template:
+  rp_setup_army_templates(&(factions[0]));
+  
   factions[0].army_list = NULL;
   factions[0].city_list = NULL;
 
@@ -39,7 +65,7 @@ void rp_setup_factions(char playername[20])
   rp_add_city(&(factions[0]),56,25,100,"testi3");
 
   
-  rp_add_army(&(factions[0]),22,22);
+  rp_add_army(&(factions[0]),22,22, 0);
 
   
   for (int i = 1; i < faction_count; i++) {
@@ -48,6 +74,7 @@ void rp_setup_factions(char playername[20])
     factions[i].food = 0;
     factions[i].ammo = 0;
     factions[i].straglers = 0;
+    rp_setup_army_templates(&(factions[i]));
     factions[i].army_list = NULL;
     factions[i].city_list = NULL;
   }
@@ -61,7 +88,7 @@ void rp_setup_factions(char playername[20])
 
 //Same stuff as in rp_add_city:
 //TODO: check if tile xy already has something in it
-void rp_add_army(faction *fact ,unsigned short in_x, unsigned short in_y)
+void rp_add_army(faction *fact ,unsigned short in_x, unsigned short in_y, char template_id)
 {
   army *csa;
 
@@ -69,7 +96,7 @@ void rp_add_army(faction *fact ,unsigned short in_x, unsigned short in_y)
     fact->army_list = malloc(sizeof(army));
     csa = fact->army_list;
     csa->x = in_x; csa->y = in_y;
-    //debug:
+    csa->army_template_id = template_id;
     csa->troop[0] = 200;
     
     csa->next = NULL;
@@ -84,7 +111,7 @@ void rp_add_army(faction *fact ,unsigned short in_x, unsigned short in_y)
 	csa->next = malloc(sizeof(city));
 	csa = csa->next;
 	csa->x = in_x; csa->y = in_y;
-	//debug:
+	csa->army_template_id = template_id;
 	csa->troop[0] = 200;
 	
 	csa->next = NULL;
@@ -105,7 +132,7 @@ void rp_add_city(faction *fact ,unsigned short in_x, unsigned short in_y,
 		 int in_pop, char in_name[20])
 {
   //TODO:Make this function a recursive thing later OR combine with rp_setup_city
-  city *csc; //I wonder what that 's' was suppoed to be... (CurSor City?)
+  city *csc; 
 
   if (fact->city_list == NULL) {
       
