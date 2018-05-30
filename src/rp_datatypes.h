@@ -1,6 +1,8 @@
 #ifndef RP_DATATYPES__
 #define RP_DATATYPES__
 
+#include <stdio.h>
+
 #define WORLD_HEIGHT 50
 #define WORLD_WIDTH 100
 
@@ -8,9 +10,25 @@
 #define PACKnALIGN __attribute__((packed,aligned(1)))
 #define ALIGN __attribute__((aligned(1)))
 
+#define DEBUG_SETUP()				\
+  FILE *macro_debugfile
+
+#define DEBUG_X(X)				\
+  macro_debugfile = fopen("test.data","a");	\
+  fprintf(macro_debugfile, X);			\
+  fclose(macro_debugfile)
+
+#define DEBUG_XY(X,Y)				\
+  macro_debugfile = fopen ("test.data","a");	\
+  fprintf(macro_debugfile,X,Y);			\
+  fclose(macro_debugfile)
+  
+
+#define NAME_LENGTH 20
+#define MAX_TROOPTYPE_AMOUNT 10
+#define MAX_ARMYTEMPLATE_AMOUNT 10
+
 typedef unsigned short tile;
-
-
 
 enum troop_move_class {
   INFANTRY,
@@ -41,7 +59,7 @@ enum troop_ability_class {
 };
 
 typedef struct troop_type {
-  char name[10];
+  char name[NAME_LENGTH];
   //these enums should be packed in a single variable
   enum troop_move_class movement;
   enum troop_weapon_class weapon;
@@ -52,16 +70,16 @@ typedef struct troop_type {
 
 typedef struct army_template {
   char id;
-  char name[10];
-  troop_type troop[10];
-  unsigned int default_troop_count[10];
+  char name[NAME_LENGTH];
+  troop_type troop[MAX_TROOPTYPE_AMOUNT];
+  unsigned int default_troop_count[MAX_TROOPTYPE_AMOUNT];
   
 } army_template;
 
 typedef struct army {
   char army_template_id;
   unsigned short x, y;
-  unsigned int troop[10]; //This is the actual amount of troops
+  unsigned int troop[MAX_TROOPTYPE_AMOUNT]; //This is the actual amount of troops
   unsigned char movement_left;
   struct army *next;
 } army;
@@ -69,7 +87,7 @@ typedef struct army {
 typedef struct city {
   unsigned short x,y;
   unsigned int population;
-  char name[20];
+  char name[NAME_LENGTH];
   struct city *next;
 } city;
 
@@ -78,8 +96,8 @@ typedef struct faction {
   unsigned int food;
   unsigned int ammo;
   unsigned int straglers;
-  char name[20];
-  army_template army_templates[10];
+  char name[NAME_LENGTH];
+  army_template army_templates[MAX_ARMYTEMPLATE_AMOUNT];
   army *army_list;
   city *city_list;
   

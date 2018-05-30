@@ -30,6 +30,7 @@ void start_game(void)
 
   rp_setup_factions("testi");
 
+
   //Main menu
 
   //Begin game
@@ -115,7 +116,9 @@ void start_game(void)
       break;
     }
     flushinp();
+    
     rp_draw_gui();
+
   }
 
  endprogescape:

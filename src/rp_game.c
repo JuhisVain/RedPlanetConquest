@@ -26,7 +26,7 @@ void rp_free_factions(void)
 
 void rp_setup_army_templates(faction *fact)
 {
-  for (int i=0; i<10; i++) {
+  for (int i=0; i<MAX_ARMYTEMPLATE_AMOUNT; i++) {
     fact->army_templates[i].id = i;
     strcpy(fact->army_templates[i].name, "DEF");
 
@@ -38,7 +38,7 @@ void rp_setup_army_templates(faction *fact)
     temp_tt.ability = NO_SPECIAL;
     temp_tt.vision_range = 2;
     
-    for (int j=0; j<10; j++) {
+    for (int j=0; j<MAX_TROOPTYPE_AMOUNT; j++) {
       fact->army_templates[i].troop[j] = temp_tt;
       fact->army_templates[i].default_troop_count[j] = 3000;
     }
@@ -66,9 +66,11 @@ void rp_setup_factions(char playername[20])
 
   
   rp_add_army(&(factions[0]),22,22, 0);
-
+  rp_add_army(&(factions[0]),32,32, 0);
   
+
   for (int i = 1; i < faction_count; i++) {
+    
     sprintf(factions[i].name, "AI-fact-%d", i);
     factions[i].id = i;
     factions[i].food = 0;
@@ -79,11 +81,12 @@ void rp_setup_factions(char playername[20])
     factions[i].city_list = NULL;
   }
 
-  
+
   //This will segfault if factions dont exist
   rp_add_city(&(factions[1]),15,10,100,"AItesti1");
   rp_add_city(&(factions[2]),16,12,100,"AItesti2");
   rp_add_city(&(factions[3]),17,14,100,"AItesti3");
+
 }
 
 //Same stuff as in rp_add_city:
@@ -93,6 +96,7 @@ void rp_add_army(faction *fact ,unsigned short in_x, unsigned short in_y, char t
   army *csa;
 
   if (fact->army_list == NULL) {
+
     fact->army_list = malloc(sizeof(army));
     csa = fact->army_list;
     csa->x = in_x; csa->y = in_y;
@@ -108,7 +112,7 @@ void rp_add_army(faction *fact ,unsigned short in_x, unsigned short in_y, char t
       if (csa->next != NULL) {
 	csa = csa->next;
       } else {
-	csa->next = malloc(sizeof(city));
+	csa->next = malloc(sizeof(army));
 	csa = csa->next;
 	csa->x = in_x; csa->y = in_y;
 	csa->army_template_id = template_id;
@@ -123,6 +127,7 @@ void rp_add_army(faction *fact ,unsigned short in_x, unsigned short in_y, char t
   //Modify world map data:
   rp_set_armycity( &(world_p->worldmap[in_y][in_x]) ,1);
   rp_set_owner( &(world_p->worldmap[in_y][in_x]) ,fact->id);
+
   return;
   
 }
@@ -198,8 +203,8 @@ city *rp_city_search(faction *fact, int x, int y)
 
 army *rp_army_search(faction *fact,int x,int y)
 {
-  
   army *ptr = fact->army_list;
+
   while (ptr != NULL) {
     if (ptr->x == x && ptr->y == y) {
       return ptr;
@@ -207,7 +212,6 @@ army *rp_army_search(faction *fact,int x,int y)
       ptr = ptr->next;
     }
   }
-  
   return NULL;
 }
 

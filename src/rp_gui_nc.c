@@ -335,7 +335,6 @@ void store_world(world *w_p)
 
 void rp_draw_gui()
 {
-  
   wmove(map,0,0); //curses cursor to start position
 
   int viewheight, viewwidth;
@@ -361,7 +360,7 @@ void rp_draw_gui()
       if (rp_get_armycity(&(world_p->worldmap[bakedi][bakedj]))) {
 
 	faction *fact = rp_faction_search(rp_get_owner(&(world_p->worldmap[bakedi][bakedj])));
-		
+	
 	army *found_army = rp_army_search(fact,bakedj,bakedi);
 	if (found_army != NULL) {
 	  symbol = L'A';
