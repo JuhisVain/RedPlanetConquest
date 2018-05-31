@@ -29,7 +29,7 @@ WINDOW *panel;
 
 WINDOW *statusline;
 stat_msg *newest_msg = NULL;
-static unsigned int statusmode = 0;//Let's say 0 is unexpanded
+//static unsigned int statusmode = 0;//Let's say 0 is unexpanded
 
 /*
 static unsigned int mapmode = 0;
@@ -197,11 +197,15 @@ void rp_init_gui(void)
 void rp_expand_statusline(void)
 {
 
-  int  viewheight, viewwidth;
-  getmaxyx(stdscr,viewheight, viewwidth);
+  int  viewheight;
+  //int viewwidth;
+  //getmaxyx(stdscr,viewheight, viewwidth);
+  viewheight = getmaxy(stdscr);
 
-  int mapheight, mapwidth;
-  getmaxyx(map, mapheight, mapwidth);
+  //int mapheight;
+  int mapwidth;
+  //getmaxyx(map, mapheight, mapwidth);
+  mapwidth = getmaxx(map);
   
   if (!UM_STATLINE_MAXIMIZED) {
     int newheight = viewheight * 0.8;
@@ -310,8 +314,10 @@ void rp_mc_up(map_cursor *cu,int n)
 
 void rp_mc_down(map_cursor *cu,int n)
 {
-  int viewheight, trash;
-  getmaxyx(map,viewheight,trash);
+  int viewheight;
+  //int trash;
+  //getmaxyx(map,viewheight,trash);
+  viewheight = getmaxy(map);
 
   if ( cu->y + n + viewheight <= WORLD_HEIGHT ){
     cu->y += n;
