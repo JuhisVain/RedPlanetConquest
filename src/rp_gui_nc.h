@@ -1,10 +1,11 @@
 #include "rp_datatypes.h"
 
+/* moved to datatypes:
 typedef struct map_cursor
 {
   int x, y;
 } map_cursor;
-
+*/
 typedef struct stat_msg stat_msg;
 struct stat_msg
 {

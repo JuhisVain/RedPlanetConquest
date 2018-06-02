@@ -5,9 +5,11 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include "rp_game_map.h"
-#include "rp_gui_nc.h"
+#include "rp_gui_nc.h" /*datatypes included here*/
 #include "rp_game.h"
 #include "rp_game_logic.h"
+
+
 
 #include "rp_gui_nc_data.h"
 

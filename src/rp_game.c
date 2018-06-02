@@ -64,10 +64,10 @@ void rp_setup_factions(char playername[20])
   rp_add_city(&(factions[0]),30,45,100,"testi2");
   rp_add_city(&(factions[0]),56,25,100,"testi3");
 
-  
+  //player armies test:
   rp_add_army(&(factions[0]),22,22, 0);
   rp_add_army(&(factions[0]),32,32, 0);
-  
+
 
   for (int i = 1; i < faction_count; i++) {
     
@@ -81,6 +81,11 @@ void rp_setup_factions(char playername[20])
     factions[i].city_list = NULL;
   }
 
+
+  
+  //enemy armies test:
+  rp_add_army(&(factions[1]),16,16,0);
+  
 
   //This will segfault if factions dont exist
   rp_add_city(&(factions[1]),15,10,100,"AItesti1");
@@ -99,6 +104,7 @@ void rp_add_army(faction *fact ,unsigned short in_x, unsigned short in_y, char t
 
     fact->army_list = malloc(sizeof(army));
     csa = fact->army_list;
+    csa->owner = fact;
     csa->x = in_x; csa->y = in_y;
     csa->army_template_id = template_id;
     csa->troop[0] = 200;
@@ -114,6 +120,7 @@ void rp_add_army(faction *fact ,unsigned short in_x, unsigned short in_y, char t
       } else {
 	csa->next = malloc(sizeof(army));
 	csa = csa->next;
+	csa->owner = fact;
 	csa->x = in_x; csa->y = in_y;
 	csa->army_template_id = template_id;
 	csa->troop[0] = 200;
@@ -224,4 +231,112 @@ faction *rp_faction_search(int fact_id)
   }
   
   return NULL;
+}
+
+void rp_reset_army_movement(army *ar)
+{
+
+  DEBUG_SETUP();
+
+  unsigned char smallest_move = 255;
+  unsigned char move_left = 0;
+
+  for (int i = 0; i < MAX_TROOPTYPE_AMOUNT; i++) {
+    troop_type *tt =
+      &(ar->owner->army_templates[ar->army_template_id].troop[i]);
+
+    switch (tt->movement) {
+    case INFANTRY:
+      move_left += 10;
+      break;
+    case WHEEL:
+      move_left += 30;
+      break;
+    case TRACK:
+      move_left += 20;
+      break;
+    case HOVER:
+      move_left += 20;
+      break;
+    default:
+      DEBUG_XY(
+	"rp_reset_army_movement in rp_game.c got strange movement enum %d\n",
+	tt->movement
+      );
+      break;
+    }
+
+    switch (tt->weapon) {
+    case SMALL:
+      move_left += 5;
+      break;
+    case HEAVY_SMALL:
+      move_left += 0;
+      break;
+    case CANNON:
+      move_left += -5;
+      break;
+    case ARTILLERY:
+      move_left += -5;
+      break;
+    default:
+      DEBUG_XY(
+	"rp_reset_army_movement in rp_game.c got strange weapon enum %d\n",
+	tt->weapon
+      );
+    }
+
+    switch (tt->armor) {
+    case NONE:
+      move_left *= 1.5;
+      break;
+    case LIGHT:
+      move_left *= 1.0;
+      break;
+    case MEDIUM:
+      move_left *= 0.9;
+      break;
+    case HEAVY:
+      move_left *= 0.8;
+      break;
+    default:
+      DEBUG_XY(
+	"rp_reset_army_movement in rp_game.c got strange armor enum %d\n",
+	tt->armor
+      );
+    }
+    /*
+    switch (tt->ability) {
+      
+    }
+    */
+
+    
+    if (move_left < smallest_move) {
+      smallest_move = move_left;
+    }
+  }
+
+  DEBUG_XY("reset army  %d,",ar->x);
+  DEBUG_XY(" %d : ",ar->y);
+  DEBUG_XY("move left:  %d\n",smallest_move);
+  
+  ar->movement_left = smallest_move;
+}
+
+void rp_new_turn(void)
+{
+  for (int i = 0; i < world_p->faction_count; i++) {
+    faction *fact = &(world_p->faction_list[i]);
+
+    army *a = fact->army_list;
+    
+    for ( ;a ;a = a->next) {
+
+      rp_reset_army_movement(a);
+
+
+    }
+    
+  }
 }

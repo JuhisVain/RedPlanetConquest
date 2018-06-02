@@ -7,3 +7,5 @@ void rp_setup_factions(char *);
 city *rp_city_search(faction *,int,int);
 army *rp_army_search(faction *,int,int);
 faction *rp_faction_search(int);
+
+void rp_new_turn(void);

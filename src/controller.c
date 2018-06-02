@@ -3,6 +3,7 @@
 #include "rp_gui_nc.h"
 #include "rp_game_map.h"
 #include "rp_game.h"
+#include "rp_game_logic.h"
 
 #include <signal.h>
 #include <stdlib.h>
@@ -30,6 +31,9 @@ void start_game(void)
 
   rp_setup_factions("testi");
 
+  rp_setup_movecost();
+
+  rp_new_turn();
 
   //Main menu
 

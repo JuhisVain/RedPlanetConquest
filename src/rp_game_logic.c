@@ -3,9 +3,7 @@
 
 extern world *world_p;
 
-static struct {
-  int flat;
-} movecost;
+static int movecost[TROOP_MOVE_CLASS_LENGTH][3]; //3=flat,rough,veryrough
 
 typedef struct {
   int x;
@@ -13,16 +11,31 @@ typedef struct {
   int counter;
 } pqcoord;
 
-void rp_pathfind(army *mover, int dest_x, int dest_y)
+void rp_setup_movecost(void)
 {
-  //Todo: later
+  movecost[INFANTRY][0] = 0;
+  movecost[INFANTRY][1] = 0;
+  movecost[INFANTRY][2] = 1;
+
+  movecost[WHEEL][0] = 0;
+  movecost[WHEEL][1] = 3;
+  movecost[WHEEL][2] = 4;
+
+  movecost[TRACK][0] = 1;
+  movecost[TRACK][1] = 1;
+  movecost[TRACK][2] = 3;
+
+  movecost[HOVER][0] = 2;
+  movecost[HOVER][1] = 2;
+  movecost[HOVER][2] = 2;
+  
 }
 
-//Returns 1 if successfully moved:
-int rp_step_army(army *mover, enum direction dir)
+/* returned.y may be outside map */
+map_cursor rp_tilecoord_at_dir(int source_x, int source_y, enum direction dir)
 {
-  int y_mod = mover->y;
-  int x_mod = mover->x;
+  int y_mod = source_y;
+  int x_mod = source_x;
   
   switch (dir) {
   case NW:
@@ -55,18 +68,86 @@ int rp_step_army(army *mover, enum direction dir)
     break;
   }
 
-  if (y_mod < 0 || y_mod >= WORLD_HEIGHT) {
-    return 0;
-  } else if (x_mod < 0) {
+  /* Wrapping */
+  if (x_mod < 0) {
     x_mod += WORLD_WIDTH;
   } else if (x_mod >= WORLD_WIDTH) {
     x_mod -= WORLD_WIDTH;
   }
 
-  tile *position = &(world_p->worldmap[mover->y][mover->x]);
-  tile *destination = &(world_p->worldmap[y_mod][x_mod]);
+  map_cursor ret;
+  ret.x = x_mod;
+  ret.y = y_mod;
+  
+  return ret;
+}
 
-  //Check if destination has foreign army:
+int rp_step_movecost(army *mover, enum direction dir)
+{
+  int cost;
+
+  /* Diagonal movement costs 3 units */
+  if (dir == N || dir == E || dir == S || dir == W) {
+    cost = 2;
+  } else {
+    cost = 3;
+  }
+
+  map_cursor dest_c = rp_tilecoord_at_dir(mover->x,mover->y,dir);;
+  int highest_cost = 0;
+  for (int i=0; i<MAX_TROOPTYPE_AMOUNT; i++) {
+
+    //dest_c = rp_tilecoord_at_dir(mover->x,mover->y,dir);
+    
+    int resource = rp_get_resource( &(world_p->worldmap[dest_c.y][dest_c.x]) );
+    
+    /* Consider everything that is not 'flat' or 'rough' as 'very rough' */
+    if (resource > 2) { //Todo: rivers
+      resource = 2;
+    }
+
+    int temp_cost = movecost[
+      mover->owner->army_templates[mover->army_template_id].troop[i].movement
+    ][resource];
+
+    if (temp_cost > highest_cost) {
+      highest_cost = temp_cost;
+    }
+    
+  }
+
+  cost += highest_cost;
+
+  /* If moving uphill */
+  if (rp_get_height( &(world_p->worldmap[dest_c.y][dest_c.x]))
+      > rp_get_height(&(world_p->worldmap[mover->y][mover->x])) ) {
+    cost++;
+  }
+
+  return cost;
+}
+
+void rp_pathfind(army *mover, int dest_x, int dest_y)
+{
+  //Todo: later
+}
+
+//Returns 1 if successfully moved:
+int rp_step_army(army *mover, enum direction dir)
+{
+
+  tile *position = &(world_p->worldmap[mover->y][mover->x]);
+
+  map_cursor dest_coord = rp_tilecoord_at_dir(mover->x,mover->y,dir);
+  /* dest_coord.y might be outside map */
+  if (dest_coord.y < 0 || dest_coord.y >= WORLD_HEIGHT) {
+
+    return 0;
+  }
+  
+  tile *destination = &(world_p->worldmap[dest_coord.y][dest_coord.x]);
+
+  /* Check if destination has foreign army: */
   if (/*rp_get_owner(destination) != rp_get_owner(position) &&*/
       //there can not be a city and and army on the same tile!!!
       //...at least for now
@@ -75,13 +156,26 @@ int rp_step_army(army *mover, enum direction dir)
     return 0; //return 1 if combat won and moved to tile
   }
 
-  //Ignoring movement costs now for testing
+  int cost_of_move = rp_step_movecost(mover,dir);
+  
+  DEBUG_SETUP();
+  DEBUG_XY("Movement cost was: %d\n",cost_of_move);
 
-  mover->x = x_mod;
-  mover->y = y_mod;
+  if (mover->movement_left >= cost_of_move) {
+    mover->movement_left -= cost_of_move;
+  } else {
+    DEBUG_XY("No more moves, move left: %d\n",mover->movement_left);
+    return 0;
+  }
+
+  DEBUG_XY("Movement left: %d\n",mover->movement_left);
+  
+  mover->x = dest_coord.x;
+  mover->y = dest_coord.y;
   rp_set_armycity(destination,1);
   rp_set_owner(destination,rp_get_owner(position));
   rp_set_armycity(position,0);
   return 1;
 
 }
+

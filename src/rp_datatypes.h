@@ -30,11 +30,12 @@
 
 typedef unsigned short tile;
 
+#define TROOP_MOVE_CLASS_LENGTH 4
 enum troop_move_class {
-  INFANTRY,
-  WHEEL,
-  TRACK,
-  HOVER
+  INFANTRY = 0,
+  WHEEL = 1,
+  TRACK = 2,
+  HOVER = 3
 };
 
 enum troop_weapon_class {
@@ -76,8 +77,11 @@ typedef struct army_template {
   
 } army_template;
 
+struct faction;
+
 typedef struct army {
-  char army_template_id;
+  int army_template_id;
+  struct faction *owner;
   unsigned short x, y;
   unsigned int troop[MAX_TROOPTYPE_AMOUNT]; //This is the actual amount of troops
   unsigned char movement_left;
@@ -123,6 +127,11 @@ enum direction {
   W,
   NW
 };
+
+/* Moved here from rp_gui_nc.h */
+typedef struct map_cursor {
+  int x,y;
+} map_cursor;
 
 
 #endif
