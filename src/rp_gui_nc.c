@@ -177,14 +177,14 @@ void rp_init_gui(void)
     
   }
 
-
   //Other colors & pairs:
   init_pair(CP_UMC,COLOR_WHITE,COLOR_BLUE);
+
 
   map = create_map_window();
   panel = create_panel_window();
   statusline = create_statusline_window();
-  
+
 
   wrefresh(map);
   wrefresh(statusline);
@@ -259,7 +259,7 @@ tile *rp_umc_tile(const map_cursor *const inmc)
   int mody = inmc->y-mc.y;
 
   //debig text:
-  char data[20];
+  char data[33];
   sprintf(data,"xom:%d,my:%d  ",xonmap,mody);
   mvwaddstr(panel,3,3,data);
 
@@ -611,7 +611,12 @@ void rp_select_event(void)
     if (found_army != NULL) {
       //UM_S_ARMY;
       //Army selection stuff here
-      rp_army_selected_input(found_army);
+
+      if (found_army->owner->controller == HUMAN) {
+	rp_army_selected_input(found_army);
+      } else {
+	//display data on panel
+      }
       return;
     }
     

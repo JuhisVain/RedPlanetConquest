@@ -1,5 +1,6 @@
 #include "rp_datatypes.h"
 #include "rp_game_map.h"
+#include <stdlib.h>
 
 extern world *world_p;
 
@@ -129,7 +130,34 @@ int rp_step_movecost(army *mover, enum direction dir)
 
 void rp_pathfind(army *mover, int dest_x, int dest_y)
 {
-  //Todo: later
+
+  /* TODO:  even later
+  int sx = mover->x, sy = mover->y;
+  int dx = dest_x, dy = dest_y;
+
+  int arr_width, arr_height;
+
+  // Handle wrapping 
+  if ( WORLD_WIDTH - dest_x + sx < dest_x - sx ) {
+    arr_width = WORLD_WIDTH - dest_x + sx +1;
+  } else {
+    arr_width = dest_x -sx +1;
+  }
+
+  // A bit of slack in case we should move away from destination 
+  #define SLACK 4
+  arr_width += SLACK;
+  arr_height = abs(dest_x-sx)+1+SLACK;
+
+  int cost[arr_width][arr_height];
+
+  for (int i=0; i<arr_width; i++) {
+    for (int j=0; j<arr_height; j++) {
+      cost[i][j] = 9999;
+    }
+  }
+  */
+  
 }
 
 //Returns 1 if successfully moved:

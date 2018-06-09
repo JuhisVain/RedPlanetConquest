@@ -11,11 +11,9 @@ void rp_add_army(faction *, unsigned short, unsigned short, char template_id);
 extern world *world_p;
 
 faction *factions = NULL;
-unsigned char faction_count; //moved to world struct, remove
 
-faction *rp_init_factions(int n)
+faction *rp_init_factions(int faction_count)
 {
-  faction_count = n;
   factions = malloc(sizeof(faction) * faction_count);
   return factions;
 }
@@ -48,7 +46,9 @@ void rp_setup_army_templates(faction *fact)
 
 void rp_setup_factions(char playername[20])
 {
+
   sprintf(factions[0].name, "%s", playername);
+  factions[0].controller = HUMAN;
   factions[0].id = 0;
   factions[0].food = 0;
   factions[0].ammo = 0;
@@ -68,10 +68,11 @@ void rp_setup_factions(char playername[20])
   rp_add_army(&(factions[0]),22,22, 0);
   rp_add_army(&(factions[0]),32,32, 0);
 
-
-  for (int i = 1; i < faction_count; i++) {
+  /* AI players */
+  for (int i = 1; i < world_p->faction_count; i++) {
     
     sprintf(factions[i].name, "AI-fact-%d", i);
+    factions[i].controller = AI;
     factions[i].id = i;
     factions[i].food = 0;
     factions[i].ammo = 0;
@@ -81,8 +82,6 @@ void rp_setup_factions(char playername[20])
     factions[i].city_list = NULL;
   }
 
-
-  
   //enemy armies test:
   rp_add_army(&(factions[1]),16,16,0);
   
@@ -224,7 +223,7 @@ army *rp_army_search(faction *fact,int x,int y)
 
 faction *rp_faction_search(int fact_id)
 {
-  for (int i=0; i<faction_count; i++) {
+  for (int i=0; i<world_p->faction_count; i++) {
     if (factions[i].id == fact_id) {
       return &(factions[i]);
     }

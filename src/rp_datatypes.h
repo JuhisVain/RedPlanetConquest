@@ -59,6 +59,12 @@ enum troop_ability_class {
   //add more later
 };
 
+enum faction_player {
+  HUMAN,
+  AI,
+  REMOTE
+};
+
 typedef struct troop_type {
   char name[NAME_LENGTH];
   //these enums should be packed in a single variable
@@ -96,6 +102,7 @@ typedef struct city {
 } city;
 
 typedef struct faction {
+  enum faction_player controller;
   unsigned char id;
   unsigned int food;
   unsigned int ammo;
@@ -116,6 +123,7 @@ typedef struct
   faction *faction_list;
   unsigned char faction_count;
 } world;
+
 
 enum direction {
   N,

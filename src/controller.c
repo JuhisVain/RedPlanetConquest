@@ -20,6 +20,7 @@ void start_game(void)
   //Initialize gui
   rp_init_gui();
 
+
   map_cursor *user_map_cursor = rp_setup_usermapcursor();
   map_cursor *map_cursor = rp_get_mapcursor();
 
@@ -34,6 +35,7 @@ void start_game(void)
   rp_setup_movecost();
 
   rp_new_turn();
+
 
   //Main menu
 
