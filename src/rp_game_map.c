@@ -1,5 +1,6 @@
 #include <stdlib.h>
 #include <stdio.h>
+#include <string.h>
 #include "rp_game_map.h"
 #include "rp_game.h"
 
@@ -71,12 +72,48 @@ void rp_set_owner(tile *source, unsigned short newown)
   *source = (*source & (~OWNER_MASK)) + newown;
 }
 
-void rp_tile_description(tile *source, char desc[20])
+/* Write the description of tile features to descr */
+//Currently max length of descr 18+1
+void rp_tile_description(tile *source, char *descr)
 {
 
   switch (rp_get_resource(source)) {
+  case 0:
+    strcpy(descr,"Flat");
+    break;
+  case 1:
+    strcpy(descr,"Rough");
+    break;
+  case 2:
+    strcpy(descr,"Very rough");
+    break;
+  case 3:
+    strcpy(descr,"Aluminium");
+    break;
+  case 4:
+    strcpy(descr,"Titanium");
+    break;
+  case 5:
+    strcpy(descr,"Carbon");
+    break;
+  case 6:
+    strcpy(descr,"Caves");
+    break;
+  case 7:
+    strcpy(descr,"Water ice");
+    break;
     
+  default:
+    strcpy(descr,"ERROR");
+    break;
   }
+
+  strcat(descr,", alt:");
+
+  char height[3];
+  sprintf(height, "%d",rp_get_height(source));
+
+  strcat(descr,height);
 
 }
 

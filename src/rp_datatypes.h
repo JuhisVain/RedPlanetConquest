@@ -86,7 +86,7 @@ typedef struct army_template {
 struct faction;
 
 typedef struct army {
-  int army_template_id;
+  int army_template_id; //index better than pointer due to potential obsolete armies
   struct faction *owner;
   unsigned short x, y;
   unsigned int troop[MAX_TROOPTYPE_AMOUNT]; //This is the actual amount of troops

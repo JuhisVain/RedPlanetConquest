@@ -33,5 +33,6 @@ void rp_set_height(tile *, unsigned short);
 void rp_set_armycity(tile *, unsigned short);
 void rp_set_owner(tile *, unsigned short);
 
+void rp_tile_description(tile *source, char *description);
 
 #endif

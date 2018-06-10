@@ -639,28 +639,50 @@ void rp_select_event(void)
   }
 }
 
+/* Show army data on panel */
 void rp_update_panel_army(army *army)
 {
 
   char data[20];
+  int line = 8;
   
-  mvwaddstr(panel,8,2,"ARMY");
-  mvwaddstr(panel,9,1,army->owner->name);
+  mvwaddstr(panel,line++,2,"ARMY");
+  mvwaddstr(panel,line++,1,army->owner->name);
   
   sprintf(data, "%d , %d",army->x,army->y);
-  mvwaddstr(panel,10,3,data);
+  mvwaddstr(panel,line++,3,data);
 
+  rp_tile_description( &(world_p->worldmap[army->y][army->x]) , data);
+  mvwaddstr(panel,line++,1,data);
+
+  sprintf(data, "Army: %s",army->owner->army_templates[army->army_template_id].name);
+  mvwaddstr(panel,line++,1,data);
+
+  sprintf(data, "Move left: %d",army->movement_left);
+  mvwaddstr(panel,line++,2,data);
+
+  for (int i=0; i<MAX_TROOPTYPE_AMOUNT; i++) {
+
+    army_template *at = &(army->owner->army_templates[army->army_template_id]);
+
+    /* <trooptype name in army's armytype>
+       <actual mancount of trooptype in army>
+       <default mancount of troop in armytype>
+    */
+    sprintf(data,"%s %d/%d", at->troop[i].name,army->troop[i],at->default_troop_count[i]);
+    mvwaddstr(panel,line++,1,data);
+  }
   
-  /*
-  sprintf(data, "%u  ", found_army->troop[0]);
-  mvwaddstr(panel,9,1,data);
-  */
 }
 
 void rp_army_selected_input(army *selected_army)
 {
 
   while (1) { //single tile step movement
+
+    rp_update_panel_army(selected_army);
+    wrefresh(panel);
+    
     wint_t input;
     wget_wch(stdscr, &input);
 
