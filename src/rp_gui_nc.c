@@ -17,6 +17,7 @@
 
 
 void rp_update_panel(tile*);
+void rp_update_panel_army(army *army_source);
 void rp_update_statusline();
 void rp_term_resize();
 
@@ -209,16 +210,16 @@ void rp_expand_statusline(void)
   //getmaxyx(map, mapheight, mapwidth);
   mapwidth = getmaxx(map);
   
-  if (!UM_STATLINE_MAXIMIZED) {
+  if (!UM_STATLINE_MAXIMIZED()) {
     int newheight = viewheight * 0.8;
     //statusmode = 1;
-    UM_MAX_STATLINE;
+    UM_MAX_STATLINE();
     wresize(map, viewheight-newheight,mapwidth);//resize mapview
     mvwin(statusline,viewheight-newheight,0);
     wresize(statusline,newheight,mapwidth);
-  } else if (UM_STATLINE_MAXIMIZED) {
+  } else if (UM_STATLINE_MAXIMIZED()) {
     //statusmode = 0;
-    UM_MIN_STATLINE;
+    UM_MIN_STATLINE();
     wresize(map, viewheight-1,mapwidth);
     wresize(statusline,1,mapwidth);
     mvwin(statusline,viewheight-1,0); //Move to bottom of screen
@@ -263,7 +264,7 @@ tile *rp_umc_tile(const map_cursor *const inmc)
   sprintf(data,"xom:%d,my:%d  ",xonmap,mody);
   mvwaddstr(panel,3,3,data);
 
-  if (UM_ARMY_IS_SELECTED && (inmc != &s_umc) ) {
+  if (UM_OWN_ARMY_IS_SELECTED() && (inmc != &s_umc) ) {
     tile_under_cursor = rp_umc_tile(&s_umc);
   }
 
@@ -454,7 +455,7 @@ void rp_update_panel(tile *source_tile)
     city *found_city;
     
     if ( (found_army = rp_army_search(fact,umc.x,umc.y)) ) {
-
+      /*
       //TODO: redo once troop types are figured out:
       sprintf(data, "%u  ", found_army->troop[0]);
       mvwaddstr(panel,9,1,data);
@@ -476,7 +477,7 @@ void rp_update_panel(tile *source_tile)
       mvwaddstr(panel,17,1,data);
       sprintf(data, "%u  ", found_army->troop[9]);
       mvwaddstr(panel,18,1,data);
-      
+      */
     } else if ( (found_city = rp_city_search(fact,umc.x,umc.y)) ) {
 
       sprintf(data, "%s", found_city->name);
@@ -577,7 +578,7 @@ void rp_end_gui(void)
 void rp_term_resize()
 {
 
-  if (UM_STATLINE_MAXIMIZED) {
+  if (UM_STATLINE_MAXIMIZED()) {
     rp_expand_statusline();
   }
 
@@ -609,13 +610,15 @@ void rp_select_event(void)
 		   umc.x, umc.y);
 
     if (found_army != NULL) {
-      //UM_S_ARMY;
+      UM_S_ARMY();
       //Army selection stuff here
 
       if (found_army->owner->controller == HUMAN) {
+	UM_S_OWN_ARMY();
 	rp_army_selected_input(found_army);
       } else {
-	//display data on panel
+	//display data on panel about foreign army
+	rp_update_panel_army(&found_army);
       }
       return;
     }
@@ -626,7 +629,7 @@ void rp_select_event(void)
 			  rp_get_owner(&(world_p->worldmap[umc.y][umc.x]))),
 			umc.x, umc.y) ))
     {
-      UM_S_CITY;
+      UM_S_CITY();
       //City selection stuff here
       return;
     }
@@ -634,6 +637,24 @@ void rp_select_event(void)
   } else { //Nothing to select here
     //Maybe an error message here
   }
+}
+
+void rp_update_panel_army(army *army)
+{
+
+  char data[20];
+  
+  mvwaddstr(panel,8,2,"ARMY");
+  mvwaddstr(panel,9,1,army->owner->name);
+  
+  sprintf(data, "%d , %d",army->x,army->y);
+  mvwaddstr(panel,10,3,data);
+
+  
+  /*
+  sprintf(data, "%u  ", found_army->troop[0]);
+  mvwaddstr(panel,9,1,data);
+  */
 }
 
 void rp_army_selected_input(army *selected_army)
@@ -697,7 +718,7 @@ void rp_army_selected_input(army *selected_army)
 int rp_multitile_movement(army *selected_army)
 {
 
-  UM_S_ARMY;
+  UM_S_ARMY();
   
   s_umc.x = umc.x;
   s_umc.y = umc.y;
@@ -737,7 +758,7 @@ int rp_multitile_movement(army *selected_army)
       break;
       
     case L'0':
-      UM_DS_ARMY;
+      UM_DS_ARMY();
       return 0;
       break;
     default:
@@ -751,8 +772,8 @@ int rp_multitile_movement(army *selected_army)
 
 void rp_deselect_event(void)
 {
-  UM_DS_ARMY;
-  UM_DS_CITY;
+  UM_DS_ARMY();
+  UM_DS_CITY();
 }
 
 void rp_center_map_to_umc(void)
