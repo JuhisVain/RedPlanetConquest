@@ -618,7 +618,7 @@ void rp_select_event(void)
 	rp_army_selected_input(found_army);
       } else {
 	//display data on panel about foreign army
-	rp_update_panel_army(&found_army);
+	rp_update_panel_army(found_army);
       }
       return;
     }

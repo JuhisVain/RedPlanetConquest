@@ -12,7 +12,7 @@ void gen_map_i(tile**);
 #define HEIGHT_MASK 0x3C0
 #define ARMYCITY_MASK 0x8000
 #define OWNER_MASK 0x7C00
-/*
+
 unsigned short rp_get_hrid(const tile *source)
 {
   return *source & HRID_MASK;
@@ -45,46 +45,7 @@ unsigned short rp_get_ac_owner_height(const tile *source)
 {
   return *source & (OWNER_MASK | ARMYCITY_MASK | HEIGHT_MASK);
 }
-*/
-//----------
 
-unsigned short rp_get_hrid(const tile source)
-{
-  return source & HRID_MASK;
-}
-unsigned short rp_get_hoid(const tile source)
-{
-  return source & (HEIGHT_MASK | OWNER_MASK);
-}
-unsigned short rp_get_resource(const tile source)
-{
-  return source & RESOURCE_MASK;
-}
-unsigned short rp_get_height(const tile source)
-{
-  return (source & HEIGHT_MASK)>>6;
-}
-unsigned short rp_get_armycity(const tile source)
-{
-  return (source & ARMYCITY_MASK)>>15;
-}
-unsigned short rp_get_owner(const tile source)
-{
-  return (source & OWNER_MASK)>>10;
-}
-/*
-unsigned short rp_get_ownerNEW(const tile source)
-{
-  return (source & OWNER_MASK)>>10;
-}
-*/
-unsigned short rp_get_ac_owner_height(const tile source)
-{
-  return source & (OWNER_MASK | ARMYCITY_MASK | HEIGHT_MASK);
-}
-
-
-//----------
 void rp_set_resource(tile *source, unsigned short newres)
 {
   newres &= RESOURCE_MASK;
@@ -110,7 +71,7 @@ void rp_set_owner(tile *source, unsigned short newown)
   *source = (*source & (~OWNER_MASK)) + newown;
 }
 
-void rp_tile_description(tile source, char desc[20])
+void rp_tile_description(tile *source, char desc[20])
 {
 
   switch (rp_get_resource(source)) {
