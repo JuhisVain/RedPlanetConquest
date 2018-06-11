@@ -18,6 +18,7 @@
 
 void rp_update_panel(tile*);
 void rp_update_panel_army(army *army_source);
+void rp_update_panel_city(city *city_source);
 void rp_update_statusline();
 void rp_term_resize();
 
@@ -446,6 +447,7 @@ void rp_update_panel(tile *source_tile)
   sprintf(data, "Al:%u Re:%u",
 	  rp_get_height(source_tile),
 	  rp_get_resource(source_tile));
+  
   mvwaddstr(panel,6,1,data);
   
   if (rp_get_armycity(source_tile)) {
@@ -455,50 +457,19 @@ void rp_update_panel(tile *source_tile)
     city *found_city;
     
     if ( (found_army = rp_army_search(fact,umc.x,umc.y)) ) {
-      /*
-      //TODO: redo once troop types are figured out:
-      sprintf(data, "%u  ", found_army->troop[0]);
-      mvwaddstr(panel,9,1,data);
-      sprintf(data, "%u  ", found_army->troop[1]);
-      mvwaddstr(panel,10,1,data);
-      sprintf(data, "%u  ", found_army->troop[2]);
-      mvwaddstr(panel,11,1,data);
-      sprintf(data, "%u  ", found_army->troop[3]);
-      mvwaddstr(panel,12,1,data);
-      sprintf(data, "%u  ", found_army->troop[4]);
-      mvwaddstr(panel,13,1,data);
-      sprintf(data, "%u  ", found_army->troop[5]);
-      mvwaddstr(panel,14,1,data);
-      sprintf(data, "%u  ", found_army->troop[6]);
-      mvwaddstr(panel,15,1,data);
-      sprintf(data, "%u  ", found_army->troop[7]);
-      mvwaddstr(panel,16,1,data);
-      sprintf(data, "%u  ", found_army->troop[8]);
-      mvwaddstr(panel,17,1,data);
-      sprintf(data, "%u  ", found_army->troop[9]);
-      mvwaddstr(panel,18,1,data);
-      */
+
+      rp_update_panel_army(found_army);
+
     } else if ( (found_city = rp_city_search(fact,umc.x,umc.y)) ) {
 
+
+      rp_update_panel_city(found_city);
+      /*
       sprintf(data, "%s", found_city->name);
       mvwaddstr(panel,9,1,data);
-      
-    }
-    /*
-    //END
-    city *found_city;
-
-    for (int i = 0; i < world_p->faction_count; i++) {
-      faction fact = world_p->faction_list[i];
-      found_city = rp_city_search(&fact,umc.x,umc.y);
-      if (found_city != NULL) {
-	break;
-      }
+      */
     }
 
-    sprintf(data, "%s", found_city->name);
-    mvwaddstr(panel,9,1,data);
-    */
   }
   
   sprintf(data, "%u   \n %d    ",*source_tile,*source_tile);
@@ -521,21 +492,6 @@ wchar_t res_sym(unsigned int resource)
   default: return L'?';
   }
 }
- 
-void draw_map(void)
-{
-  
-}
-/*
-map_cursor worldx_to_scrx(int x)
-{
-  
-  return world_p->worldmap[]
-}
-*/
-//These two should be somewhere else:
-
-
 
 WINDOW *create_map_window(void)
 {
@@ -601,12 +557,12 @@ void rp_select_event(void)
 {
   
   if (rp_get_armycity(&(world_p->worldmap[umc.y][umc.x]))) {
-    
+
+    /* Find army */
     army *found_army;
-  
     found_army = rp_army_search(
 		   rp_faction_search(
-		     rp_get_ownerNEW( world_p->worldmap[umc.y][umc.x] )),
+		     rp_get_owner( &(world_p->worldmap[umc.y][umc.x]))),
 		   umc.x, umc.y);
 
     if (found_army != NULL) {
@@ -622,14 +578,17 @@ void rp_select_event(void)
       }
       return;
     }
-    
+
+    /* Find city if no army was found */
     city *found_city;
-    if ((found_city = rp_city_search(
-			rp_faction_search(
-			  rp_get_owner(&(world_p->worldmap[umc.y][umc.x]))),
-			umc.x, umc.y) ))
-    {
+    found_city = rp_city_search(
+		   rp_faction_search(
+		     rp_get_owner(&(world_p->worldmap[umc.y][umc.x]))),
+		   umc.x, umc.y);
+    
+    if (found_city != NULL) {
       UM_S_CITY();
+      rp_update_panel_city(found_city);
       //City selection stuff here
       return;
     }
@@ -637,6 +596,26 @@ void rp_select_event(void)
   } else { //Nothing to select here
     //Maybe an error message here
   }
+}
+
+void rp_update_panel_city(city *city)
+{
+  char data[20];
+  int line = 8;
+
+  mvwaddstr(panel,line++,2,"CITY");
+  mvwaddstr(panel,line++,1,city->owner->name);
+
+  sprintf(data, "%d , %d",city->x,city->y);
+  mvwaddstr(panel,line++,3,data);
+
+  rp_tile_description( &(world_p->worldmap[city->y][city->x]) , data);
+  mvwaddstr(panel,line++,1,data);
+
+  mvwaddstr(panel,line++,1,city->name);
+
+  sprintf(data, "Poulation: %u",city->population);
+  mvwaddstr(panel,line++,1,data);
 }
 
 /* Show army data on panel */

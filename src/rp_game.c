@@ -149,6 +149,7 @@ void rp_add_city(faction *fact ,unsigned short in_x, unsigned short in_y,
       
     fact->city_list = malloc(sizeof(city));
     csc = fact->city_list;
+    csc->owner = fact;
     csc->x = in_x; csc->y = in_y;
     csc->population = in_pop;
     strcpy(csc->name, in_name);
@@ -166,6 +167,7 @@ void rp_add_city(faction *fact ,unsigned short in_x, unsigned short in_y,
 	csc->next = malloc(sizeof(city));
       
 	csc = csc->next;
+	csc->owner = fact;
 	csc->x = in_x; csc->y = in_y;
 	csc->population = in_pop;
 	strcpy(csc->name, in_name);

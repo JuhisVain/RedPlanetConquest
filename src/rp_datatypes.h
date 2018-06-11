@@ -95,6 +95,7 @@ typedef struct army {
 } army;
 
 typedef struct city {
+  struct faction *owner;
   unsigned short x,y;
   unsigned int population;
   char name[NAME_LENGTH];
