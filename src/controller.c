@@ -45,6 +45,12 @@ void start_game(void)
   while ( 1 ) {
 
     wget_wch(stdscr, &input);
+
+    //TESTing statusline messages:
+    char data[20];
+    sprintf(data,"Got key: %u",input);
+    rp_new_sl_msg(0, data);
+    //---
     
     switch (input) {
     case KEY_LEFT:

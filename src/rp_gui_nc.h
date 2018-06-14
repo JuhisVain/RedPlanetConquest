@@ -1,17 +1,11 @@
 #include "rp_datatypes.h"
 
-/* moved to datatypes:
-typedef struct map_cursor
+typedef struct stat_msg
 {
-  int x, y;
-} map_cursor;
-*/
-typedef struct stat_msg stat_msg;
-struct stat_msg
-{
+  unsigned int flag;
   char *message;
-  stat_msg *older;
-};
+  struct stat_msg *older;
+} stat_msg;
 
 void rp_init_gui(void);
 void rp_end_gui(void);
@@ -34,5 +28,7 @@ void rp_center_map_to_umc(void);
 
 void rp_army_selected_input(army *);
 int rp_multitile_movement(army *selected_army);
+
+void rp_new_sl_msg(unsigned int par_flag, char *text);
 
 void input_key_debug(int);

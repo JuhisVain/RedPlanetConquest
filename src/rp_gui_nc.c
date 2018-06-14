@@ -4,6 +4,7 @@
 #include <signal.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 #include "rp_game_map.h"
 #include "rp_gui_nc.h" /*datatypes included here*/
 #include "rp_game.h"
@@ -22,6 +23,8 @@ void rp_update_panel_city(city *city_source);
 void rp_update_statusline();
 void rp_term_resize();
 
+void rp_cull_msgbuf(void);
+
 WINDOW *create_map_window(void);
 WINDOW *create_panel_window(void);
 WINDOW *create_statusline_window(void);
@@ -31,6 +34,7 @@ wchar_t res_sym(unsigned int);
 WINDOW *map;
 WINDOW *panel;
 
+#define MSGBUF_SIZE 50
 WINDOW *statusline;
 stat_msg *newest_msg = NULL;
 //static unsigned int statusmode = 0;//Let's say 0 is unexpanded
@@ -425,6 +429,7 @@ void rp_draw_gui()
 
 void rp_update_statusline(void)
 {
+  /* old debugging data, writes map's screen coords to statline
   int viewheight, viewwidth,begheight, begwidth;
   getbegyx(map, begheight, begwidth);
   getmaxyx(map, viewheight, viewwidth);
@@ -436,9 +441,62 @@ void rp_update_statusline(void)
   wattron(statusline, COLOR_PAIR(CP_UMC));
   //for (int i = 0; i < viewheight; i++) {
   //for (int j = 0; j < viewwidth; j++) {
-      waddstr(statusline,xxx);
-      //}
-      //}
+  waddstr(statusline,xxx);
+  //}
+  //}
+  */
+
+  int top = getbegy(statusline);    //beginning coordinate
+  int bottom = getmaxy(statusline); //height
+  stat_msg *msg = newest_msg;
+
+  char data[20];
+  sprintf(data,"t:%d,b:%d",top,bottom);
+  mvwaddstr(panel,0,0,data);
+
+  for (int i = bottom-1;
+       i >= 0 && msg != NULL;
+       i--, msg = msg->older) {
+    mvwaddstr(statusline,i,0,msg->message);
+  }
+  
+}
+
+/* Add new statusline message */
+void rp_new_sl_msg(unsigned int par_flag, char *text)
+{
+  stat_msg *new_msg = malloc(sizeof(stat_msg));
+  new_msg->flag = par_flag;
+  new_msg->message = malloc(sizeof(char) * strlen(text));
+  strcpy(new_msg->message,text);
+  
+  new_msg->older = newest_msg;
+  newest_msg = new_msg;
+  
+  rp_cull_msgbuf();
+  
+}
+
+void rp_free_sl_msg(stat_msg **old_msg)
+{
+  free((*old_msg)->message);
+  free((*old_msg));
+  *old_msg = NULL;
+}
+
+
+void rp_cull_msgbuf(void)
+{
+  int i = 0;
+  stat_msg **cur_msg = &newest_msg;
+  while(*cur_msg != NULL) {
+    if (i == MSGBUF_SIZE) {
+      rp_free_sl_msg(cur_msg);
+    } else {
+      cur_msg = &((*cur_msg)->older);
+      i++;
+    }
+  }
 }
 
 void rp_update_panel(tile *source_tile)
