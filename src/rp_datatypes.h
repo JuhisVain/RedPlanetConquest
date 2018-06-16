@@ -28,6 +28,8 @@
 #define MAX_TROOPTYPE_AMOUNT 10
 #define MAX_ARMYTEMPLATE_AMOUNT 10
 
+#define MSGBUF_SIZE 50
+
 typedef unsigned short tile;
 
 #define TROOP_MOVE_CLASS_LENGTH 4
@@ -136,6 +138,15 @@ enum direction {
   W,
   NW
 };
+
+/* Messages for statusline */
+typedef struct stat_msg
+{
+  unsigned int flag;
+  char *message;
+  struct stat_msg *older;
+} stat_msg;
+
 
 /* Moved here from rp_gui_nc.h */
 typedef struct map_cursor {

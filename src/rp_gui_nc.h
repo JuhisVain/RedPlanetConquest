@@ -1,12 +1,5 @@
 #include "rp_datatypes.h"
 
-typedef struct stat_msg
-{
-  unsigned int flag;
-  char *message;
-  struct stat_msg *older;
-} stat_msg;
-
 void rp_init_gui(void);
 void rp_end_gui(void);
 void rp_term_resize();

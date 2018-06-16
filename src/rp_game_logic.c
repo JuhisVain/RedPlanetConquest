@@ -1,5 +1,6 @@
 #include "rp_datatypes.h"
 #include "rp_game_map.h"
+#include "rp_statline_msg.h"
 #include <stdlib.h>
 
 extern world *world_p;
@@ -29,6 +30,8 @@ void rp_setup_movecost(void)
   movecost[HOVER][0] = 2;
   movecost[HOVER][1] = 2;
   movecost[HOVER][2] = 2;
+
+  rp_new_sl_msg(0,"Movement costs set up.");
   
 }
 
@@ -170,6 +173,8 @@ int rp_step_army(army *mover, enum direction dir)
   /* dest_coord.y might be outside map */
   if (dest_coord.y < 0 || dest_coord.y >= WORLD_HEIGHT) {
 
+    rp_new_sl_msg(0,"Unable to move outside map!");
+    
     return 0;
   }
   
@@ -181,28 +186,33 @@ int rp_step_army(army *mover, enum direction dir)
       //...at least for now
       rp_get_armycity(destination)) {
     //todo: combat
+
+    //temporary:
+    rp_new_sl_msg(0,"Combat not implemented yet!");
+    
     return 0; //return 1 if combat won and moved to tile
   }
 
   int cost_of_move = rp_step_movecost(mover,dir);
-  
-  DEBUG_SETUP();
-  DEBUG_XY("Movement cost was: %d\n",cost_of_move);
 
   if (mover->movement_left >= cost_of_move) {
     mover->movement_left -= cost_of_move;
   } else {
-    DEBUG_XY("No more moves, move left: %d\n",mover->movement_left);
+    rp_new_sl_msg(0,"No more movement points left!");
     return 0;
   }
 
-  DEBUG_XY("Movement left: %d\n",mover->movement_left);
-  
   mover->x = dest_coord.x;
   mover->y = dest_coord.y;
   rp_set_armycity(destination,1);
   rp_set_owner(destination,rp_get_owner(position));
   rp_set_armycity(position,0);
+
+  char data[64];
+  sprintf(data,"Army moved to (%d,%d) using %d mps: %d left."
+	  ,dest_coord.x,dest_coord.y,cost_of_move,mover->movement_left);
+  rp_new_sl_msg(0,data);
+  
   return 1;
 
 }

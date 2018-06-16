@@ -10,6 +10,8 @@
 #include "rp_game.h"
 #include "rp_game_logic.h"
 
+#include "rp_statline_msg.h"
+
 
 
 #include "rp_gui_nc_data.h"
@@ -23,7 +25,6 @@ void rp_update_panel_city(city *city_source);
 void rp_update_statusline();
 void rp_term_resize();
 
-void rp_cull_msgbuf(void);
 
 WINDOW *create_map_window(void);
 WINDOW *create_panel_window(void);
@@ -34,9 +35,9 @@ wchar_t res_sym(unsigned int);
 WINDOW *map;
 WINDOW *panel;
 
-#define MSGBUF_SIZE 50
+
 WINDOW *statusline;
-stat_msg *newest_msg = NULL;
+extern stat_msg *newest_msg;
 //static unsigned int statusmode = 0;//Let's say 0 is unexpanded
 
 /*
@@ -460,43 +461,6 @@ void rp_update_statusline(void)
     mvwaddstr(statusline,i,0,msg->message);
   }
   
-}
-
-/* Add new statusline message */
-void rp_new_sl_msg(unsigned int par_flag, char *text)
-{
-  stat_msg *new_msg = malloc(sizeof(stat_msg));
-  new_msg->flag = par_flag;
-  new_msg->message = malloc(sizeof(char) * strlen(text));
-  strcpy(new_msg->message,text);
-  
-  new_msg->older = newest_msg;
-  newest_msg = new_msg;
-  
-  rp_cull_msgbuf();
-  
-}
-
-void rp_free_sl_msg(stat_msg **old_msg)
-{
-  free((*old_msg)->message);
-  free((*old_msg));
-  *old_msg = NULL;
-}
-
-
-void rp_cull_msgbuf(void)
-{
-  int i = 0;
-  stat_msg **cur_msg = &newest_msg;
-  while(*cur_msg != NULL) {
-    if (i == MSGBUF_SIZE) {
-      rp_free_sl_msg(cur_msg);
-    } else {
-      cur_msg = &((*cur_msg)->older);
-      i++;
-    }
-  }
 }
 
 void rp_update_panel(tile *source_tile)
