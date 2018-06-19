@@ -18,10 +18,14 @@
 
 #define PANELSIZE 20
 
+/*At what line does panel update start writing*/
+#define PANELSTARTLINE 8
+
 
 void rp_update_panel(tile*);
-void rp_update_panel_army(army *army_source);
-void rp_update_panel_city(city *city_source);
+void rp_update_panel_army(army *army_source, tile *source_tile);
+void rp_update_panel_city(city *city_source, tile *source_tile);
+void rp_update_panel_clear(tile *source_tile);
 void rp_update_statusline();
 void rp_term_resize();
 
@@ -419,11 +423,9 @@ void rp_draw_gui()
   rp_update_panel(rp_umc_tile(&umc));
   rp_update_statusline();
 
-  
-  wrefresh(panel);
   wrefresh(map);
+  wrefresh(panel);
   wrefresh(statusline);
-
 }
 
   
@@ -475,27 +477,32 @@ void rp_update_panel(tile *source_tile)
   if (rp_get_armycity(source_tile)) {
 
     faction *fact = rp_faction_search(rp_get_owner(source_tile));
-    army *found_army;
-    city *found_city;
+    void *found;
+    //army *found_army;
+    //city *found_city;
     
-    if ( (found_army = rp_army_search(fact,umc.x,umc.y)) ) {
+    // if ( (found_army = rp_army_search(fact,umc.x,umc.y)) ) {
+    if ( (found = rp_army_search(fact,umc.x,umc.y)) ) {
+      
+      rp_update_panel_army(found, source_tile);
 
-      rp_update_panel_army(found_army);
+      //} else if ( (found_city = rp_city_search(fact,umc.x,umc.y)) ) {
+    } else if ( (found = rp_city_search(fact,umc.x,umc.y)) ) {
 
-    } else if ( (found_city = rp_city_search(fact,umc.x,umc.y)) ) {
-
-
-      rp_update_panel_city(found_city);
+      rp_update_panel_city(found, source_tile);
       /*
       sprintf(data, "%s", found_city->name);
       mvwaddstr(panel,9,1,data);
       */
+    } else {
+      //if armycity cue found but no actual army or city found for faction
+      // = error
     }
 
+  } else {
+    rp_update_panel_clear(source_tile);
   }
   
-  sprintf(data, "%u   \n %d    ",*source_tile,*source_tile);
-  mvwaddstr(panel,7,1,data);
 }
 
 wchar_t res_sym(unsigned int resource)
@@ -577,8 +584,9 @@ void rp_term_resize()
 
 void rp_select_event(void)
 {
-  
-  if (rp_get_armycity(&(world_p->worldmap[umc.y][umc.x]))) {
+
+  tile *sel_tile = &(world_p->worldmap[umc.y][umc.x]);
+  if (rp_get_armycity(sel_tile)) {
 
     /* Find army */
     army *found_army;
@@ -596,7 +604,7 @@ void rp_select_event(void)
 	rp_army_selected_input(found_army);
       } else {
 	//display data on panel about foreign army
-	rp_update_panel_army(found_army);
+	rp_update_panel_army(found_army,sel_tile);
       }
       return;
     }
@@ -610,7 +618,7 @@ void rp_select_event(void)
     
     if (found_city != NULL) {
       UM_S_CITY();
-      rp_update_panel_city(found_city);
+      rp_update_panel_city(found_city,sel_tile);
       //City selection stuff here
       return;
     }
@@ -620,10 +628,10 @@ void rp_select_event(void)
   }
 }
 
-void rp_update_panel_city(city *city)
+void rp_update_panel_city(city *city, tile *source_tile)
 {
   char data[20];
-  int line = 8;
+  int line = PANELSTARTLINE;
 
   mvwaddstr(panel,line++,2,"CITY");
   mvwaddstr(panel,line++,1,city->owner->name);
@@ -631,7 +639,8 @@ void rp_update_panel_city(city *city)
   sprintf(data, "%d , %d",city->x,city->y);
   mvwaddstr(panel,line++,3,data);
 
-  rp_tile_description( &(world_p->worldmap[city->y][city->x]) , data);
+  //rp_tile_description( &(world_p->worldmap[city->y][city->x]) , data);
+  rp_tile_description(source_tile , data);
   mvwaddstr(panel,line++,1,data);
 
   mvwaddstr(panel,line++,1,city->name);
@@ -641,11 +650,11 @@ void rp_update_panel_city(city *city)
 }
 
 /* Show army data on panel */
-void rp_update_panel_army(army *army)
+void rp_update_panel_army(army *army, tile *source_tile)
 {
 
   char data[20];
-  int line = 8;
+  int line = PANELSTARTLINE;
   
   mvwaddstr(panel,line++,2,"ARMY");
   mvwaddstr(panel,line++,1,army->owner->name);
@@ -653,7 +662,8 @@ void rp_update_panel_army(army *army)
   sprintf(data, "%d , %d",army->x,army->y);
   mvwaddstr(panel,line++,3,data);
 
-  rp_tile_description( &(world_p->worldmap[army->y][army->x]) , data);
+  //rp_tile_description( &(world_p->worldmap[army->y][army->x]) , data);
+  rp_tile_description(source_tile, data);
   mvwaddstr(panel,line++,1,data);
 
   sprintf(data, "Army: %s",army->owner->army_templates[army->army_template_id].name);
@@ -676,12 +686,32 @@ void rp_update_panel_army(army *army)
   
 }
 
+void rp_update_panel_clear(tile *source_tile)
+{
+  char data[20];
+  int line = PANELSTARTLINE;
+
+  mvwaddstr(panel,line++,1,"Countryside");
+
+  strcpy(data, (world_p->faction_list[rp_get_owner(source_tile)].name));
+  mvwaddstr(panel,line++,1,data);
+  
+  sprintf(data, "%d , %d",umc.x,umc.y);
+  mvwaddstr(panel,line++,3,data);
+
+  rp_tile_description(source_tile, data);
+  mvwaddstr(panel,line++,1,data);
+  
+}
+
 void rp_army_selected_input(army *selected_army)
 {
 
   while (1) { //single tile step movement
 
-    rp_update_panel_army(selected_army);
+    rp_update_panel_army(selected_army,
+      &(world_p->worldmap[selected_army->y][selected_army->x]));
+    
     wrefresh(panel);
     
     wint_t input;
