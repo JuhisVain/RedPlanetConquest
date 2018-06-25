@@ -27,8 +27,8 @@ void start_game(void)
   //Initialize game:
   //rp_init_factions(1); //moved to create_world in rp_game_map
   world_p = create_world();
-  world_p->faction_list = rp_init_factions(4);
-  world_p->faction_count = 4;
+  world_p->faction_list = rp_init_factions(32);
+  //world_p->faction_count = 30;
 
   rp_setup_factions("testi");
 

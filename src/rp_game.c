@@ -3,10 +3,8 @@
 #include <string.h>
 #include "rp_datatypes.h"
 #include "rp_game_map.h"
-
-city *rp_setup_city(int, int, char*);
-void rp_add_city(faction *, unsigned short, unsigned short,int, char[20]);
-void rp_add_army(faction *, unsigned short, unsigned short, char template_id);
+#include "rp_game.h"
+#include "rp_statline_msg.h"
 
 extern world *world_p;
 
@@ -14,6 +12,7 @@ faction *factions = NULL;
 
 faction *rp_init_factions(int faction_count)
 {
+  world_p->faction_count = faction_count;
   factions = malloc(sizeof(faction) * faction_count);
   return factions;
 }
@@ -87,9 +86,18 @@ void rp_setup_factions(char playername[20])
   
 
   //This will segfault if factions dont exist
+  //update apparently now it's plain memory corruption
   rp_add_city(&(factions[1]),15,10,100,"AItesti1");
   rp_add_city(&(factions[2]),16,12,100,"AItesti2");
   rp_add_city(&(factions[3]),17,14,100,"AItesti3");
+
+  /*More cities:*/
+  for (int i = 4; i < world_p->faction_count; i++) {
+    char cityname[20];
+    sprintf(cityname,"F%d-city%d",i,i);
+    rp_add_city_rand(&factions[i],100,cityname);
+  }
+  
 
 }
 
@@ -183,6 +191,28 @@ void rp_add_city(faction *fact ,unsigned short in_x, unsigned short in_y,
   return;
   
 }
+
+
+void rp_add_city_rand(faction *owner, int population, char cityname[20])
+{
+  DEBUG_SETUP();
+  int randx, randy;
+  do {
+    randx = rand()%WORLD_WIDTH;
+    randy = rand()%WORLD_HEIGHT;
+    DEBUG_XY("%s : ",cityname);
+    DEBUG_XY("Trying with x:%d",randx);
+    DEBUG_XY(", y:%d\n",randy);
+    rp_new_sl_msg(0,"random coords generated");
+  } while (
+	   rp_get_armycity( &(world_p->worldmap[randy][randx])) ?
+	   rp_new_sl_msg(0,"rand produced tile with stuff -> rerolling"), 1
+	   : 0
+	   );
+
+  rp_add_city(owner,randx,randy,population,cityname);
+}
+
 
 //obsolete:
 city *rp_setup_city(int x, int y, char *name)

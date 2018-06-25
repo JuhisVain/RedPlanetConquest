@@ -169,8 +169,9 @@ void rp_init_gui(void)
   //Faction colors:
   init_color(C_FACTION_1,600,60,600);
   //debug:
-  for (int i=1; i<32; i++) {  
-    init_color(C_FACTION_1+i,500,400,0);
+  for (int i=1; i<32; i++) {
+    //Testing with colors with random values
+    init_color(C_FACTION_1+i,rand()%999,rand()%999,rand()%999);
   }
 
   init_color(C_FACTION_1+1,800,0,800);
@@ -364,15 +365,15 @@ void rp_draw_gui()
   for (i = 0; i < viewheight; i++) {
     int bakedi = i + mc.y;
     if (bakedi >= WORLD_HEIGHT) break;
-    for (int j = 0; j < viewwidth; j++){
+    for (int j = 0; j < viewwidth; j++) {
       int bakedj = j + mc.x;
       //If our window is large enough, we will need to wrap the map
       while (bakedj >= WORLD_WIDTH) {
 	bakedj -= WORLD_WIDTH;
       } //mc.x cannot be negative, so no need to do same for that
 
-      //wattron(map,COLOR_PAIR(rp_get_hrid(&(world_p->worldmap[bakedi][bakedj]))));
-      wchar_t symbol = '!';
+
+      wchar_t symbol = '!'; //symbol will remain '!' if armycity cue true, but none found
       unsigned short colorpairid = 1;
 
       //If army or city iterate through those:
@@ -395,6 +396,16 @@ void rp_draw_gui()
       } else {
 	symbol = res_sym(rp_get_resource(&(world_p->worldmap[bakedi][bakedj])));
       }
+
+      //debugging
+      if (symbol == L'!') {
+	char symdata[60];
+	tile tt = world_p->worldmap[bakedi][bakedj];
+	sprintf(symdata,"armycitycue error:Tile(%d,%d)=%u,own:%d",bakedj,bakedi,tt,
+		rp_get_owner(&tt));
+	rp_new_sl_msg(0,symdata);
+      }
+      //debugging out
       
       cchar_t ch = {0,{symbol},0};
       if (rp_get_armycity(&(world_p->worldmap[bakedi][bakedj]))) {
