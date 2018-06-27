@@ -443,27 +443,12 @@ void rp_draw_gui()
 
 void rp_update_statusline(void)
 {
-  /* old debugging data, writes map's screen coords to statline
-  int viewheight, viewwidth,begheight, begwidth;
-  getbegyx(map, begheight, begwidth);
-  getmaxyx(map, viewheight, viewwidth);
-
-  char xxx[100];
-  sprintf(xxx, "sl: begy:%d begx: %d, maxy: %d maxx: %d ",begheight,begwidth,viewheight,viewwidth);
-
-  wmove(statusline,0,0);
-  wattron(statusline, COLOR_PAIR(CP_UMC));
-  //for (int i = 0; i < viewheight; i++) {
-  //for (int j = 0; j < viewwidth; j++) {
-  waddstr(statusline,xxx);
-  //}
-  //}
-  */
 
   int top = getbegy(statusline);    //beginning coordinate
   int bottom = getmaxy(statusline); //height
   stat_msg *msg = newest_msg;
 
+  /* DEBUG mark statline window's y-coords at top of panel window */
   char data[20];
   sprintf(data,"t:%d,b:%d",top,bottom);
   mvwaddstr(panel,0,0,data);
@@ -472,6 +457,7 @@ void rp_update_statusline(void)
        i >= 0 && msg != NULL;
        i--, msg = msg->older) {
     mvwaddstr(statusline,i,0,msg->message);
+    wclrtoeol(statusline); /*Clear window to end of line*/
   }
   
 }
@@ -644,20 +630,26 @@ void rp_update_panel_city(city *city, tile *source_tile)
   char data[20];
   int line = PANELSTARTLINE;
 
-  mvwaddstr(panel,line++,2,"CITY");
+  mvwaddstr(panel,line++,1," CITY");
+  wclrtoeol(panel);
   mvwaddstr(panel,line++,1,city->owner->name);
+  wclrtoeol(panel);
 
   sprintf(data, "%d , %d",city->x,city->y);
   mvwaddstr(panel,line++,3,data);
+  wclrtoeol(panel);
 
   //rp_tile_description( &(world_p->worldmap[city->y][city->x]) , data);
   rp_tile_description(source_tile , data);
   mvwaddstr(panel,line++,1,data);
+  wclrtoeol(panel);
 
   mvwaddstr(panel,line++,1,city->name);
+  wclrtoeol(panel);
 
   sprintf(data, "Poulation: %u",city->population);
   mvwaddstr(panel,line++,1,data);
+  wclrtoeol(panel);
 }
 
 /* Show army data on panel */
@@ -667,21 +659,27 @@ void rp_update_panel_army(army *army, tile *source_tile)
   char data[20];
   int line = PANELSTARTLINE;
   
-  mvwaddstr(panel,line++,2,"ARMY");
+  mvwaddstr(panel,line++,1," ARMY");
+  wclrtoeol(panel);
   mvwaddstr(panel,line++,1,army->owner->name);
+  wclrtoeol(panel);
   
   sprintf(data, "%d , %d",army->x,army->y);
   mvwaddstr(panel,line++,3,data);
+  wclrtoeol(panel);
 
   //rp_tile_description( &(world_p->worldmap[army->y][army->x]) , data);
   rp_tile_description(source_tile, data);
   mvwaddstr(panel,line++,1,data);
+  wclrtoeol(panel);
 
   sprintf(data, "Army: %s",army->owner->army_templates[army->army_template_id].name);
   mvwaddstr(panel,line++,1,data);
+  wclrtoeol(panel);
 
   sprintf(data, "Move left: %d",army->movement_left);
   mvwaddstr(panel,line++,2,data);
+  wclrtoeol(panel);
 
   for (int i=0; i<MAX_TROOPTYPE_AMOUNT; i++) {
 
@@ -693,6 +691,7 @@ void rp_update_panel_army(army *army, tile *source_tile)
     */
     sprintf(data,"%s %d/%d", at->troop[i].name,army->troop[i],at->default_troop_count[i]);
     mvwaddstr(panel,line++,1,data);
+    wclrtoeol(panel);
   }
   
 }
@@ -703,15 +702,19 @@ void rp_update_panel_clear(tile *source_tile)
   int line = PANELSTARTLINE;
 
   mvwaddstr(panel,line++,1,"Countryside");
+  wclrtoeol(panel);
 
   strcpy(data, (world_p->faction_list[rp_get_owner(source_tile)].name));
   mvwaddstr(panel,line++,1,data);
+  wclrtoeol(panel);
   
   sprintf(data, "%d , %d",umc.x,umc.y);
   mvwaddstr(panel,line++,3,data);
+  wclrtoeol(panel);
 
   rp_tile_description(source_tile, data);
   mvwaddstr(panel,line++,1,data);
+  wclrtoeol(panel);
   
 }
 
