@@ -22,6 +22,8 @@ void rp_center_map_to_umc(void);
 void rp_army_selected_input(army *);
 int rp_multitile_movement(army *selected_army);
 
+void rp_panel_add(int line, int xcoord, char *data);
+
 void rp_new_sl_msg(unsigned int par_flag, char *text);
 
 void input_key_debug(int);

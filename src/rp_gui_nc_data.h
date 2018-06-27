@@ -19,4 +19,3 @@ static unsigned int ui_mode = 0;
 #define UM_STATLINE_MAXIMIZED() (ui_mode & statlinemask)
 #define UM_MAX_STATLINE() ui_mode |= statlinemask
 #define UM_MIN_STATLINE() ui_mode = ~(~ui_mode | statlinemask)
-
