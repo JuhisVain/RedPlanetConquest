@@ -4,7 +4,7 @@
 
 #
 
-Conquer mars, or possibly some other location
+Conquer Mars, or possibly some other location
 
 Requires NCurses.
 On Linux compiles with:
