@@ -16,6 +16,7 @@ Controls:
 - Arrow keys to move view around.
 - Shift + arrows move view faster
 - Number keys move cursor
+- 'm' expands message log
 - Enter on ground centers view on cursor.
 - Enter selects army when your own army (a darker violet 'A') is under cursor.
 - Number keys move selected army around until it runs out of moves
